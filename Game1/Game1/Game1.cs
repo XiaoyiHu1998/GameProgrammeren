@@ -30,9 +30,9 @@ namespace Game1
         KeyboardState input = Keyboard.GetState();
         System.Random rand = new System.Random();
 
-        Vector2 ballLocation = new Vector2(350, 225);
+        Vector2 ballLocation;
         Vector2 ballVelocity;
-        Vector2 ballAccelleration = new Vector2(0.35f, 0);
+        Vector2 ballAccelleration;
 
 
         Vector2 player1Location = new Vector2(50, 200);
@@ -58,7 +58,9 @@ namespace Game1
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
+            ballLocation = new Vector2(350, 225);
+            ballVelocity = new Vector2(2, rand.Next(-1,1) * 2);
+            ballAccelleration = new Vector2(0.35f, 0.35f);
 
             base.Initialize();
         }
