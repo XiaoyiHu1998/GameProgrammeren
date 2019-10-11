@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 class TetrisBlock
 {
@@ -198,9 +199,10 @@ class TetrisGrid
     public int Width { get { return 10; } }
     public int Height { get { return 20; } }
 
-    Color[,] grid = new Color[20, 10];
+    public Color[,] grid = new Color[20, 10];
     Vector2 currentDrawPosition = Vector2.Zero;
     TetrisBlock tetrisblock = new block_square(Vector2.Zero);
+    float timer = 30.0f;
     int input;
     
     public TetrisGrid()
@@ -213,6 +215,9 @@ class TetrisGrid
     public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
     {
         currentDrawPosition = position;
+        Vector2 blockPosition = tetrisblock.getLocation();
+        Color blockColor = tetrisblock.getColor();
+        bool[,] blockArray = tetrisblock.Read();
         UpdateGrid();
 
         for(int i = 0; i < 20; i++)
@@ -225,8 +230,18 @@ class TetrisGrid
             currentDrawPosition.X = 0;
             currentDrawPosition.Y += 30;
         }
-
-        currentDrawPosition = Vector2.Zero;
+        
+        if(blockPosition.Y < 16)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    if (blockArray[i, j])
+                        spriteBatch.Draw(emptyCell, new Vector2((blockPosition.X + new Vector2(i, j).X) * 30, (blockPosition.Y + new Vector2(i, j).Y) * 30), blockColor);
+                }
+            }
+        }
         
     }
     
@@ -251,125 +266,186 @@ class TetrisGrid
         input = i;
     }
 
-    public void UpdateGrid()
+    public void moveTetrisBlock(int input, ref bool[,] blockArray, bool canGoDownTwice, Vector2 position)
     {
-        Clear();
-        Color color = tetrisblock.getColor();
-        Vector2 position = tetrisblock.getLocation();
-        bool[,] blockArray = tetrisblock.Read();
-        bool blockHit = false;
-        bool canGoDownTwice = true;
-
-        if(position.X < 18)
+        int xDisplacement = 0;
+        int yDisplacement = 1;
+        switch (input)
         {
-            for (int i = 3; i > 0; i--)
-            {
-                for (int j = 0; j < 4; j++)
-                {
+            case 0:
+                bool leftSideEmpty = true;
 
-                    if (grid[i + (int)position.Y + 1, j + (int)position.X] != Color.White)
+                if (position.X > 0)
+                {
+                    xDisplacement = -1;
+                }
+                else
+                {
+                    for (int i = 0; i < 4; i++)
                     {
-                        blockHit = true;
+                        if (blockArray[i, 0])
+                            leftSideEmpty = false;
                     }
 
-                    if (grid[i + (int)position.Y + 2, j + (int)position.X] != Color.White)
+
+                    if (leftSideEmpty)
                     {
+                        for (int i = 0; i < 4; i++)
+                        {
+                            for (int j = 0; j < 3; j++)
+                            {
+                                blockArray[i, j] = blockArray[i, j + 1];
+                            }
+
+                            blockArray[i, 3] = false;
+                        }
+                    }
+                }
+
+                break;
+            case 1:
+                bool rightSideEmpty = true;
+
+                if (position.X < 6)
+                {
+                    xDisplacement = 1;
+                }
+                else
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        if (blockArray[i, 3])
+                            rightSideEmpty = false;
+                    }
+
+
+                    if (rightSideEmpty)
+                    {
+                        for (int i = 0; i < 4; i++)
+                        {
+                            for (int j = 3; j > 1; j--)
+                            {
+                                blockArray[i, j] = blockArray[i, j - 1];
+                            }
+
+                            blockArray[i, 0] = false;
+                        }
+                    }
+                }
+                break;
+            case 2:
+                if (canGoDownTwice)
+                    yDisplacement = 2;
+                break;
+        }
+
+        if(position.Y == 15)
+        {
+            bool bottomSideEmpty = true;
+            yDisplacement = 0;
+
+            for(int i = 0; i < 4; i++)
+            {
+                if (blockArray[i, 3])
+                    bottomSideEmpty = false;
+            }
+
+            if (bottomSideEmpty)
+            {
+                //for (int i = 3; i > 0; i--)
+                //{
+                //    for (int j = 0; j < 4; j++)
+                //    {
+                //        blockArray[i, j] = blockArray[i - 1, j];
+                //    }
+                //}
+
+                //for (int i = 0; i < 4; i++)
+                //{
+                //    blockArray[0, i] = false;
+                //}
+            }
+        }
+
+        tetrisblock.updateLocation(new Vector2(xDisplacement, yDisplacement));
+    }
+
+    public void UpdateGrid()
+    {
+        if(timer > 0)
+        {
+            timer -= 0.8f;
+        }
+        else
+        {
+            Color color = tetrisblock.getColor();
+            Vector2 position = tetrisblock.getLocation();
+            bool[,] blockArray = tetrisblock.Read();
+            bool blockHit = false;
+            bool canGoDownTwice = true;
+
+            if (position.Y < 15)
+            {
+                for (int i = 3; i > 0; i--)
+                {
+                    for (int j = 0; j < 4; j++)
+                    {
+                        if (grid[i + (int)position.Y + 1, j + (int)position.X] != Color.White)
+                        {
+                            blockHit = true;
+                        }
+
+                        if (grid[i + (int)position.Y + 2, j + (int)position.X] != Color.White)
+                        {
+                            canGoDownTwice = false;
+                        }
+                    }
+                }
+            }
+            else if (position.Y < 16)
+            {
+                for (int i = 3; i > 1; i--)
+                {
+                    for (int j = 0; j < 4; j++)
+                    {
+
+                        if (grid[i + (int)position.Y + 1, j + (int)position.X] != Color.White)
+                        {
+                            blockHit = true;
+                        }
+
                         canGoDownTwice = false;
                     }
                 }
             }
-        }
-        else if (position.X < 19)
-        {
-            for (int i = 3; i > 0; i--)
+            else if (position.Y == 16)
             {
-                for (int j = 0; j < 4; j++)
-                {
-
-                    if (grid[i + (int)position.Y + 1, j + (int)position.X] != Color.White)
-                    {
-                        blockHit = true;
-                    }
-
-                    canGoDownTwice = false;
-                }
+                blockHit = true;
+                canGoDownTwice = false;
             }
-        }
-        else if(position.Y == 20)
-        {
-            blockHit = true;
-            canGoDownTwice = false;
-        }
 
-        if (blockHit)
-        {
-            for (int i = 0; i < 4; i++)
+            if (blockHit)
             {
-                for (int j = 0; j < 4; j++)
+                for (int i = 0; i < 4; i++)
                 {
-                    if (blockArray[i,j])
+                    for (int j = 0; j < 4; j++)
                     {
-                        grid[i + (int)position.Y, j + (int)position.X] = color;
+                        if (blockArray[i, j])
+                        {
+                            grid[i + (int)position.Y, j + (int)position.X] = color;
+                        }
                     }
                 }
             }
-        }
-        else
-        {
-            int xDisplacement = 0;
-            int yDisplacement = 1;
-            switch(input)
+            else
             {
-                case 0:
-                    bool leftSideEmpty = true;
-
-                    if(position.Y > 0)
-                    {
-                        xDisplacement = -1;
-                    }
-                    else
-                    {
-                        for (int i = 0; i < 4; i++)
-                        {
-                            if (blockArray[i, 0])
-                                leftSideEmpty = false;
-                        }
-
-
-                        if (leftSideEmpty)
-                            xDisplacement = -1;
-                    }
-
-                    break;
-                case 1:
-                    bool rightSideEmpty = true;
-
-                    if (position.Y < 10)
-                    {
-                        xDisplacement = 1;
-                    }
-                    else
-                    {
-                        for (int i = 0; i < 4; i++)
-                        {
-                            if (blockArray[i, 3])
-                                rightSideEmpty = false;
-                        }
-
-
-                        if (rightSideEmpty)
-                            xDisplacement = 1;
-                    }
-                    break;
-                case 2:
-                    if (canGoDownTwice)
-                        yDisplacement = 2;
-                    break;
+                moveTetrisBlock(input, ref blockArray, canGoDownTwice, position);
             }
 
-            tetrisblock.updateLocation(new Vector2(yDisplacement, xDisplacement));
+            timer = 30.0f;
         }
-
+        
+       
         //for (int i = 0; i < tetrisblocks.Count; i++)
         //{
         //    color = tetrisblocks[i].getColor();
