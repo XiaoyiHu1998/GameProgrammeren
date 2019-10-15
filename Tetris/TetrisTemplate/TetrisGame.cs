@@ -62,17 +62,28 @@ class TetrisGame : Game
         gameWorld.HandleInput(gameTime, inputHelper);
         gameWorld.Update(gameTime);
 
-        if(inputHelper.KeyPressed(Microsoft.Xna.Framework.Input.Keys.A))
+        if(inputHelper.KeyDown(Microsoft.Xna.Framework.Input.Keys.A))
         {
             gameWorld.Input(0);
         }
-        else if(inputHelper.KeyPressed(Microsoft.Xna.Framework.Input.Keys.D))
+        else if(inputHelper.KeyDown(Microsoft.Xna.Framework.Input.Keys.D))
         {
             gameWorld.Input(1);
         }
-        else if(inputHelper.KeyPressed(Microsoft.Xna.Framework.Input.Keys.S))
+        else if(inputHelper.KeyDown(Microsoft.Xna.Framework.Input.Keys.S))
         {
             gameWorld.Input(2);
+        }
+        else if (inputHelper.KeyDown(Microsoft.Xna.Framework.Input.Keys.E))
+        {
+            gameWorld.Input(3);
+        }
+        else if (inputHelper.KeyDown(Microsoft.Xna.Framework.Input.Keys.Q))
+        {
+            gameWorld.Input(4);
+        }
+        else{
+            gameWorld.Input(1000);
         }
     }
 

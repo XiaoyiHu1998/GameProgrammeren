@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -11,6 +12,7 @@ class TetrisBlock
     Color color;
     int[] dimensions;
 
+
     public TetrisBlock(Vector2 location, bool[,] blockArray, Color blockColor, int[] blockDimensions)
     {
         Location = location;
@@ -18,16 +20,28 @@ class TetrisBlock
         dimensions = blockDimensions;
         blocks = blockArray;
     }
-
     public void rotateRight()
     {
+        bool[,] rotatedright = RotateMatrix(blocks, 4);
 
+        bool[,] RotateMatrix(bool[,] matrix, int n)
+        {
+            bool[,] newGrid = new bool[n, n];
+
+            for (int i = 0; i < n; ++i)
+            {
+                for (int j = 0; j < n; ++j)
+                {
+                    newGrid[i, j] = matrix[n - j - 1, i];
+                }
+            }
+
+            blocks = newGrid;
+            return newGrid;
+        }
     }
 
-    public void rotateLeft()
-    {
-        
-    }
+
 
     public bool[,] Read()
     {
@@ -382,6 +396,20 @@ class TetrisGrid
                 if (canGoDownTwice)
                     yDisplacement = 2;
                 break;
+            case 3:
+                tetrisblock.rotateRight();
+                break;
+            case 4:
+                for (int i = 0; i < 3; i++)
+                {
+                    tetrisblock.rotateRight();
+                }
+                break;
+            case 1000:
+
+                break;
+            default:
+                break;
         }
 
         if(position.Y == 15)
@@ -403,6 +431,7 @@ class TetrisGrid
 
         tetrisblock.updateLocation(new Vector2(xDisplacement, yDisplacement));
     }
+
 
     public void UpdateGrid()
     {
