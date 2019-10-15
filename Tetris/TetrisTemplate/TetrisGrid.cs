@@ -1,7 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Threading;
+
 
 class TetrisBlock
 {
@@ -51,6 +52,48 @@ class TetrisBlock
     public int[] getDimensions()
     {
         return dimensions;
+    }
+
+    public void shiftLeft()
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                blocks[i, j] = blocks[i, j++];
+            }
+
+            blocks[i, 3] = false;
+        }
+    }
+
+    public void shiftRight()
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            for (int j = 3; j > 0; j--)
+            {
+                blocks[i, j] = blocks[i, j--];
+            }
+
+            blocks[i, 0] = false;
+        }
+    }
+
+    public void shiftDown()
+    {
+        for (int i = 3; i > 0; i--)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                blocks[i, j] = blocks[i--, j];
+            }
+        }
+
+        for(int j = 0; j < 4; j++)
+        {
+            blocks[0, j] = false;
+        }
     }
 }
 
@@ -201,7 +244,7 @@ class TetrisGrid
 
     public Color[,] grid = new Color[20, 10];
     Vector2 currentDrawPosition = Vector2.Zero;
-    TetrisBlock tetrisblock = new block_square(Vector2.Zero);
+    TetrisBlock tetrisblock = new block_L(Vector2.Zero);
     float timer = 30.0f;
     int input;
     
@@ -242,7 +285,23 @@ class TetrisGrid
                 }
             }
         }
-        
+
+        for (int i = 0; i < 4; i++)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                if (blockArray[i, j])
+                {
+                    spriteBatch.Draw(emptyCell, new Vector2((400 + (new Vector2(i, j).X) * 30), (200 + (new Vector2(i, j).Y) * 30)), Color.Green);
+                }
+                else
+                {
+                    spriteBatch.Draw(emptyCell, new Vector2((400 + (new Vector2(i, j).X) * 30), (200 + (new Vector2(i, j).Y) * 30)), Color.Red);
+                }
+
+            }
+        }
+
     }
     
     public void Clear()
@@ -266,10 +325,12 @@ class TetrisGrid
         input = i;
     }
 
-    public void moveTetrisBlock(int input, ref bool[,] blockArray, bool canGoDownTwice, Vector2 position)
+    public void moveTetrisBlock(int input,ref TetrisBlock tetrisBlock, bool canGoDownTwice, Vector2 position)
     {
         int xDisplacement = 0;
         int yDisplacement = 1;
+        bool[,] blockArray = tetrisBlock.Read();
+
         switch (input)
         {
             case 0:
@@ -290,15 +351,7 @@ class TetrisGrid
 
                     if (leftSideEmpty)
                     {
-                        for (int i = 0; i < 4; i++)
-                        {
-                            for (int j = 0; j < 3; j++)
-                            {
-                                blockArray[i, j] = blockArray[i, j + 1];
-                            }
-
-                            blockArray[i, 3] = false;
-                        }
+                        tetrisblock.shiftLeft();
                     }
                 }
 
@@ -321,15 +374,7 @@ class TetrisGrid
 
                     if (rightSideEmpty)
                     {
-                        for (int i = 0; i < 4; i++)
-                        {
-                            for (int j = 3; j > 1; j--)
-                            {
-                                blockArray[i, j] = blockArray[i, j - 1];
-                            }
-
-                            blockArray[i, 0] = false;
-                        }
+                        tetrisblock.shiftRight();
                     }
                 }
                 break;
@@ -352,18 +397,7 @@ class TetrisGrid
 
             if (bottomSideEmpty)
             {
-                //for (int i = 3; i > 0; i--)
-                //{
-                //    for (int j = 0; j < 4; j++)
-                //    {
-                //        blockArray[i, j] = blockArray[i - 1, j];
-                //    }
-                //}
-
-                //for (int i = 0; i < 4; i++)
-                //{
-                //    blockArray[0, i] = false;
-                //}
+                tetrisblock.shiftDown();
             }
         }
 
@@ -439,7 +473,7 @@ class TetrisGrid
             }
             else
             {
-                moveTetrisBlock(input, ref blockArray, canGoDownTwice, position);
+                moveTetrisBlock(input, ref tetrisblock, canGoDownTwice, position);
             }
 
             timer = 30.0f;
