@@ -54,23 +54,18 @@ class GameWorld
 
     public void Update(GameTime gameTime)
     {
-        grid.UpdateGrid();
     }
 
     public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
     {
         spriteBatch.Begin();
         grid.Draw(gameTime, spriteBatch);
+        spriteBatch.DrawString(font, "Hello!", Vector2.Zero, Color.Blue);
         spriteBatch.End();
     }
 
     public void Reset()
     {
-    }
-
-    public void Input(int integer)
-    {
-        grid.setInput(integer);
     }
 
 }
