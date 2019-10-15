@@ -334,53 +334,13 @@ class TetrisGrid
         switch (input)
         {
             case 0:
-                bool leftSideEmpty = true;
-
-                if (position.X > 0)
-                {
-                    xDisplacement = -1;
-                }
-                else
-                {
-                    for (int i = 0; i < 4; i++)
-                    {
-                        if (blockArray[i, 0])
-                            leftSideEmpty = false;
-                    }
-
-
-                    if (leftSideEmpty)
-                    {
-                        tetrisblock.shiftLeft();
-                    }
-                }
 
                 break;
             case 1:
-                bool rightSideEmpty = true;
-
-                if (position.X < 6)
-                {
-                    xDisplacement = 1;
-                }
-                else
-                {
-                    for (int i = 0; i < 4; i++)
-                    {
-                        if (blockArray[i, 3])
-                            rightSideEmpty = false;
-                    }
-
-
-                    if (rightSideEmpty)
-                    {
-                        tetrisblock.shiftRight();
-                    }
-                }
+                
                 break;
             case 2:
-                if (canGoDownTwice)
-                    yDisplacement = 2;
+                
                 break;
         }
 
@@ -412,92 +372,9 @@ class TetrisGrid
         }
         else
         {
-            Color color = tetrisblock.getColor();
-            Vector2 position = tetrisblock.getLocation();
-            bool[,] blockArray = tetrisblock.Read();
-            bool blockHit = false;
-            bool canGoDownTwice = true;
-
-            if (position.Y < 15)
-            {
-                for (int i = 3; i > 0; i--)
-                {
-                    for (int j = 0; j < 4; j++)
-                    {
-                        if (grid[i + (int)position.Y + 1, j + (int)position.X] != Color.White)
-                        {
-                            blockHit = true;
-                        }
-
-                        if (grid[i + (int)position.Y + 2, j + (int)position.X] != Color.White)
-                        {
-                            canGoDownTwice = false;
-                        }
-                    }
-                }
-            }
-            else if (position.Y < 16)
-            {
-                for (int i = 3; i > 1; i--)
-                {
-                    for (int j = 0; j < 4; j++)
-                    {
-
-                        if (grid[i + (int)position.Y + 1, j + (int)position.X] != Color.White)
-                        {
-                            blockHit = true;
-                        }
-
-                        canGoDownTwice = false;
-                    }
-                }
-            }
-            else if (position.Y == 16)
-            {
-                blockHit = true;
-                canGoDownTwice = false;
-            }
-
-            if (blockHit)
-            {
-                for (int i = 0; i < 4; i++)
-                {
-                    for (int j = 0; j < 4; j++)
-                    {
-                        if (blockArray[i, j])
-                        {
-                            grid[i + (int)position.Y, j + (int)position.X] = color;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                moveTetrisBlock(input, ref tetrisblock, canGoDownTwice, position);
-            }
-
+            moveTetrisBlock();
             timer = 30.0f;
         }
-        
-       
-        //for (int i = 0; i < tetrisblocks.Count; i++)
-        //{
-        //    color = tetrisblocks[i].getColor();
-        //    position = tetrisblocks[i].getLocation();
-        //    blockArray = tetrisblocks[i].Read();
-            
-        //    for(int j = 0; j < 4; j++)
-        //    {
-        //        for (int k = 0; k < 4; k++)
-        //        {
-        //            if(blockArray[j,k])
-        //            {
-        //                grid[j + (int)position.X, k + (int)position.Y] = color;
-        //            }
-        //        }
-        //    }
-
-        //}
         
     }
 }
