@@ -249,7 +249,7 @@ class block_I : TetrisBlock
 
 class BlockSelector
 {
-    static Vector2 startLocation = new Vector2(5,10);
+    static Vector2 startLocation = new Vector2(0,10);
     TetrisBlock[] blockArray = { new block_I(startLocation), new block_square(startLocation),
                                  new block_L(startLocation), new block_L_inverse(startLocation),
                                  new block_z(startLocation), new block_z_inverse(startLocation),
@@ -274,7 +274,7 @@ class TetrisGrid
     static BlockSelector blockSelector = new BlockSelector();
     static Random random = new Random();
     List<int> pointbuffer;
-    public Color[,] grid = new Color[22, 12];
+    public Color[,] grid = new Color[20, 10];
     Vector2 currentDrawPosition = Vector2.Zero;
     TetrisBlock activeBlock = new block_L(Vector2.Zero);
     TetrisBlock nextBlock = blockSelector.SelectNextBlock(random.Next(0,6));
