@@ -44,11 +44,23 @@ class GameWorld
     /// </summary>
     int score;
 
+    /// <summary>
+    /// The level of the player based on points.
+    /// </summary>
+    int level;
+
+    /// <summary>
+    /// The level of the player based on points.
+    /// </summary>
+    float levelThreshold;
+
     public GameWorld()
     {
         random = new Random();
         gameState = GameState.Playing;
         score = 0;
+        level = 1;
+        levelThreshold = 50;
 
         font = TetrisGame.ContentManager.Load<SpriteFont>("SpelFont");
 
@@ -62,16 +74,24 @@ class GameWorld
     public void Update(GameTime gameTime)
     {
         grid.UpdateGrid();
+        score += grid.returnPointBuffer();
+        if(score == levelThreshold)
+        {
+            level++;
+            levelThreshold *= 1.5f;
+        }
     }
 
     public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
     {
         {
-            Vector2 textLocationStart = new Vector2(400, 200);
-            Vector2 textLocationScore = new Vector2(400, 200);
-            Vector2 textLocationVolgendBlock = new Vector2(400, 250);
+            Vector2 textLocationStart = new Vector2(400, 50);
+            Vector2 textLocationEnd = new Vector2(400, 50);
+            Vector2 textLocationScore = new Vector2(400, 50);
+            Vector2 textLocationLevel = new Vector2(400, 80);
+            Vector2 textLocationVolgendBlock = new Vector2(400, 110);
 
-            switch (gameState)
+            switch ((int)gameState)
             {
                 case 0:
                     spriteBatch.Begin();
@@ -81,8 +101,9 @@ class GameWorld
                     break;
                 case 1:
                     spriteBatch.Begin();
-                    spriteBatch.DrawString(font, "Score van levens: " + score, textLocationScore, Color.Black);
-                    spriteBatch.DrawString(font, "Volgend blok:" + volgendBlok, textLocationVolgendBlock, Color.Black);
+                    spriteBatch.DrawString(font, "Score: " + score, textLocationScore, Color.Black);
+                    spriteBatch.DrawString(font, "Level: " + level, textLocationLevel, Color.Black);
+                    spriteBatch.DrawString(font, "Volgend blok:", textLocationVolgendBlock, Color.Black);
                     grid.Draw(gameTime, spriteBatch);
                     spriteBatch.End();
                     break;
@@ -104,6 +125,16 @@ class GameWorld
     public void Input(int integer)
     {
         grid.setInput(integer);
+    }
+
+    protected void incrementScoreBlock()
+    {
+        score += 10;
+    }
+
+    protected void incrementScoreRow()
+    {
+        score += 100;
     }
 
 }
