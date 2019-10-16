@@ -470,19 +470,40 @@ class TetrisGrid
         activeBlock.updateLocation(new Vector2(xDisplacement, yDisplacement));
     }
 
-    public bool checkCollision()
+    public bool checkCollisionBottom()
     {
         bool[,] blockArray = activeBlock.Read();
         Vector2 activeBlockPosition = activeBlock.getLocation();
         bool hasCollided = false;
 
-        for(int y = 0; y < 4; y++)
+        for (int y = 0; y < 4; y++)
         {
-            for(int x = 0; x < 4; x++)
+            for (int x = 0; x < 4; x++)
             {
-                if (blockArray[y, x] && grid[y + (int)activeBlockPosition.Y, x + (int)activeBlockPosition.X] != Color.White
-                    && y + (int)activeBlockPosition.Y < 19 && x + activeBlockPosition.X >= 0 && x + activeBlockPosition.X <= 9)
+                if (blockArray[y, x] && grid[y + (int)activeBlockPosition.Y + 1, x + (int)activeBlockPosition.X] != Color.White)
+                {
                     hasCollided = true;
+                }
+            }
+        }
+
+        return hasCollided;
+    }
+
+    public bool checkCollisionSides()
+    {
+        bool[,] blockArray = activeBlock.Read();
+        Vector2 activeBlockPosition = activeBlock.getLocation();
+        bool hasCollided = false;
+
+        for (int y = 0; y < 4; y++)
+        {
+            for (int x = 0; x < 4; x++)
+            {
+                if (blockArray[y, x] && y + (int)activeBlockPosition.Y + 1 > 9 || x + (int)activeBlockPosition.X - 1 < 0)
+                {
+                    hasCollided = true;
+                }
             }
         }
 
