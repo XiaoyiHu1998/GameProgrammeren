@@ -2,6 +2,9 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Media;
+
 
 class TetrisGame : Game
 {
@@ -54,6 +57,10 @@ class TetrisGame : Game
         // create and reset the game world
         gameWorld = new GameWorld();
         gameWorld.Reset();
+
+        MediaPlayer.IsRepeating = true;
+        MediaPlayer.Play(Content.Load<Song>("snd_music"));
+       // SoundEffect blocksound = Content.Load<SoundEffect>("snd_click");
     }
 
     protected override void Update(GameTime gameTime)
