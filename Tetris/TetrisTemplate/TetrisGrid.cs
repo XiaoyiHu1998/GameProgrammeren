@@ -249,7 +249,7 @@ class block_I : TetrisBlock
 
 class BlockSelector
 {
-    static Vector2 startLocation = new Vector2(0,10);
+    static Vector2 startLocation = new Vector2(5,0);
     TetrisBlock[] blockArray = { new block_I(startLocation), new block_square(startLocation),
                                  new block_L(startLocation), new block_L_inverse(startLocation),
                                  new block_z(startLocation), new block_z_inverse(startLocation),
@@ -276,7 +276,7 @@ class TetrisGrid
     List<int> pointbuffer;
     public Color[,] grid = new Color[20, 10];
     Vector2 currentDrawPosition = Vector2.Zero;
-    TetrisBlock activeBlock = new block_L(Vector2.Zero);
+    TetrisBlock activeBlock = new block_L(new Vector2(3,0));
     TetrisBlock nextBlock = blockSelector.SelectNextBlock(random.Next(0,6));
 
     float timer = 30.0f;
@@ -302,9 +302,9 @@ class TetrisGrid
         bool[,] nextBlockArray = nextBlock.Read();
         UpdateGrid();
 
-        for(int i = 0; i < 20; i++)
+        for(int i = 0; i < Height; i++)
         {
-            for(int j = 0; j < 10; j++)
+            for(int j = 0; j < Width; j++)
             {
                 spriteBatch.Draw(emptyCell, currentDrawPosition, grid[i, j]);
                 currentDrawPosition.X += 30;
@@ -363,9 +363,9 @@ class TetrisGrid
     
     public void Clear()
     {
-        for(int i = 0; i < 20; i ++)
+        for(int i = 0; i < Height; i ++)
         {
-            for(int j = 0; j < 10; j++)
+            for(int j = 0; j < Width; j++)
             {
                 grid[i, j] = Color.White;
             }
@@ -386,62 +386,52 @@ class TetrisGrid
         switch (input)
         {
             case 0:
-                bool leftSideEmpty = true;
-
-                if (position.X > 0)
+                //move left
+                if(!checkCollisionSides())
                 {
-                    xDisplacement = -1;
-                }
-                else
-                {
-                    for (int i = 0; i < 4; i++)
-                    {
-                        if (blockArray[i, 0])
-                            leftSideEmpty = false;
-                    }
-
-
-                    if (leftSideEmpty)
-                    {
-                        activeBlock.shiftLeft();
-                    }
+                    activeBlock.updateLocation(new Vector2(-1, 0));
                 }
 
                 break;
             case 1:
-                bool rightSideEmpty = true;
-
-                if (position.X < 6)
+                //move right
+                if (!checkCollisionSides())
                 {
-                    xDisplacement = 1;
+                    activeBlock.updateLocation(new Vector2(1, 0));
                 }
-                else
-                {
-                    for (int i = 0; i < 4; i++)
-                    {
-                        if (blockArray[i, 3])
-                            rightSideEmpty = false;
-                    }
 
-
-                    if (rightSideEmpty)
-                    {
-                        activeBlock.shiftRight();
-                    }
-                }
                 break;
             case 2:
-                if (canGoDownTwice)
-                    yDisplacement = 2;
+                //move down
+                for(int i = 0; i < 2; i++)
+                {
+                    if (!checkBlockOnBlockCollision())
+                    {
+                        activeBlock.updateLocation(new Vector2(0,0));
+                    }
+                }
                 break;
             case 3:
+                //rotate right
                 activeBlock.rotateRight();
+                if(checkBlockOnBlockCollision())
+                {
+                    activeBlock.rotateRight();
+                    activeBlock.rotateRight();
+                    activeBlock.rotateRight();
+                }
                 break;
             case 4:
-                for (int i = 0; i < 3; i++)
+                //rotate left
+                activeBlock.rotateRight();
+                activeBlock.rotateRight();
+                activeBlock.rotateRight();
+
+                if (checkBlockOnBlockCollision())
                 {
                     activeBlock.rotateRight();
                 }
+
                 break;
             case 1000:
 
@@ -470,7 +460,7 @@ class TetrisGrid
         activeBlock.updateLocation(new Vector2(xDisplacement, yDisplacement));
     }
 
-    public bool checkCollisionBottom()
+    public bool checkBlockOnBlockCollision()
     {
         bool[,] blockArray = activeBlock.Read();
         Vector2 activeBlockPosition = activeBlock.getLocation();
@@ -480,9 +470,17 @@ class TetrisGrid
         {
             for (int x = 0; x < 4; x++)
             {
-                if (blockArray[y, x] && grid[y + (int)activeBlockPosition.Y + 1, x + (int)activeBlockPosition.X] != Color.White)
+                if (blockArray[y, x] && grid[y + (int)activeBlockPosition.Y, x + (int)activeBlockPosition.X] != Color.White)
                 {
-                    hasCollided = true;
+                    if ((int)activeBlockPosition.Y + y < 19)
+                    {
+                        hasCollided = grid[y + (int)activeBlockPosition.Y + 1, x + (int)activeBlockPosition.X] != Color.White;
+                    }
+                    else if ((int)activeBlockPosition.Y + y == 19)
+                    {
+                        hasCollided = true;
+                    }
+
                 }
             }
         }
@@ -500,7 +498,7 @@ class TetrisGrid
         {
             for (int x = 0; x < 4; x++)
             {
-                if (blockArray[y, x] && y + (int)activeBlockPosition.Y + 1 > 9 || x + (int)activeBlockPosition.X - 1 < 0)
+                if (blockArray[y, x] && x + (int)activeBlockPosition.X  == 6 || x + (int)activeBlockPosition.X <= 0)
                 {
                     hasCollided = true;
                 }
@@ -526,44 +524,9 @@ class TetrisGrid
             bool canGoDownTwice = true;
             bool rowCleared = false;
 
-            if (position.Y < 15)
-            {
-                for (int i = 3; i > 0; i--)
-                {
-                    for (int j = 0; j < 4; j++)
-                    {
-                        if (grid[i + (int)position.Y + 1, j + (int)position.X] != Color.White)
-                        {
-                            blockHit = true;
-                        }
-
-                        if (grid[i + (int)position.Y + 2, j + (int)position.X] != Color.White)
-                        {
-                            canGoDownTwice = false;
-                        }
-                    }
-                }
-            }
-            else if (position.Y < 16)
-            {
-                for (int i = 3; i > 1; i--)
-                {
-                    for (int j = 0; j < 4; j++)
-                    {
-
-                        if (grid[i + (int)position.Y + 1, j + (int)position.X] != Color.White)
-                        {
-                            blockHit = true;
-                        }
-
-                        canGoDownTwice = false;
-                    }
-                }
-            }
-            else if (position.Y == 16)
+            if (checkBlockOnBlockCollision())
             {
                 blockHit = true;
-                canGoDownTwice = false;
             }
 
             if (blockHit)
