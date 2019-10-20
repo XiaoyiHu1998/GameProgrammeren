@@ -89,7 +89,22 @@ class TetrisGame : Game
         {
             gameWorld.Input(4);
         }
-        else{
+        else if (inputHelper.KeyDown(Microsoft.Xna.Framework.Input.Keys.Space) && gameWorld.gameState == GameWorld.GameState.StartScreen)
+        {
+            gameWorld.Reset();
+            gameWorld.Start();
+        }
+        else if (inputHelper.KeyDown(Microsoft.Xna.Framework.Input.Keys.Enter) && gameWorld.gameState == GameWorld.GameState.GameOver)
+        {
+            gameWorld.Reset();
+            LoadContent();
+        }
+        else if (inputHelper.KeyDown(Microsoft.Xna.Framework.Input.Keys.Escape))
+        {
+            Exit();
+        }
+        else
+        {
             gameWorld.Input(1000);
         }
     }

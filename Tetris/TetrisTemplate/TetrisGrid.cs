@@ -10,39 +10,30 @@ class TetrisBlock
     protected bool[,] blocks = new bool[4, 4];
     Vector2 Location;
     Color color;
-    int[] dimensions;
 
 
-    public TetrisBlock(Vector2 location, bool[,] blockArray, Color blockColor, int[] blockDimensions)
+    public TetrisBlock(Vector2 location, bool[,] blockArray, Color blockColor)
     {
         Location = location;
         color = blockColor;
-        dimensions = blockDimensions;
         blocks = blockArray;
     }
+
     public void rotateRight()
     {
-        bool[,] rotatedright = RotateMatrix(blocks, 4);
+        bool[,] newArray = new bool[4, 4];
 
-        bool[,] RotateMatrix(bool[,] matrix, int n)
+        for (int i = 0; i < 4; ++i)
         {
-            bool[,] newGrid = new bool[n, n];
-
-            for (int i = 0; i < n; ++i)
+            for (int j = 0; j < 4; ++j)
             {
-                for (int j = 0; j < n; ++j)
-                {
-                    newGrid[i, j] = matrix[n - j - 1, i];
-                }
+                newArray[i, j] = blocks[3 - j, i];
             }
-
-            blocks = newGrid;
-            return newGrid;
         }
+
+        blocks = newArray;
     }
-
-
-
+    
     public bool[,] Read()
     {
         return blocks;
@@ -52,7 +43,12 @@ class TetrisBlock
     {
         return Location;
     }
-    
+
+    public void setLocation(Vector2 displacement)
+    {
+        Location = displacement;
+    }
+
     public void updateLocation(Vector2 displacement)
     {
         Location += displacement;
@@ -62,53 +58,7 @@ class TetrisBlock
     {
         return color;
     }
-
-    public int[] getDimensions()
-    {
-        return dimensions;
-    }
-
-    public void shiftLeft()
-    {
-        for (int i = 0; i < 4; i++)
-        {
-            for (int j = 0; j < 3; j++)
-            {
-                blocks[i, j] = blocks[i, j++];
-            }
-
-            blocks[i, 3] = false;
-        }
-    }
-
-    public void shiftRight()
-    {
-        for (int i = 0; i < 4; i++)
-        {
-            for (int j = 3; j > 0; j--)
-            {
-                blocks[i, j] = blocks[i, j--];
-            }
-
-            blocks[i, 0] = false;
-        }
-    }
-
-    public void shiftDown()
-    {
-        for (int i = 3; i > 0; i--)
-        {
-            for (int j = 0; j < 4; j++)
-            {
-                blocks[i, j] = blocks[i--, j];
-            }
-        }
-
-        for(int j = 0; j < 4; j++)
-        {
-            blocks[0, j] = false;
-        }
-    }
+    
 }
 
 class block_square : TetrisBlock
@@ -124,8 +74,7 @@ class block_square : TetrisBlock
                     { false,false,false,false }
                 },
 
-                Color.Pink, 
-                new int[] { 2, 2}
+                Color.Pink
             )
     {}
 }
@@ -143,8 +92,7 @@ class block_T : TetrisBlock
                     { false,false,false,false }
                 },
 
-                Color.Blue,
-                new int[] { 3, 2 }
+                Color.Blue
             )
     { }
 }
@@ -162,8 +110,7 @@ class block_L : TetrisBlock
                     { false,false,false,false }
                 },
 
-                Color.Purple,
-                new int[] { 2, 3 }
+                Color.Purple
             )
     { }
 }
@@ -182,8 +129,7 @@ class block_L_inverse : TetrisBlock
                     { false,false,false,false }
                 },
 
-                Color.Orange,
-                new int[] { 2, 3 }
+                Color.Orange
             )
     { }
 }
@@ -202,8 +148,7 @@ class block_z : TetrisBlock
                     { false,false,false,false }
                 },
 
-                Color.Yellow,
-                new int[] { 3, 2 }
+                Color.Yellow
             )
     { }
 }
@@ -222,8 +167,7 @@ class block_z_inverse : TetrisBlock
                     { false,false,false,false }
                 },
 
-                Color.Green,
-                new int[] { 3, 2 }
+                Color.Green
             )
     { }
 }
@@ -241,15 +185,14 @@ class block_I : TetrisBlock
                     { false,true,false,false }
                 },
 
-                Color.Red,
-                new int[] { 1, 4 }
+                Color.Red
             )
     { }
 }
 
 class BlockSelector
 {
-    static Vector2 startLocation = new Vector2(5,0);
+    static Vector2 startLocation = new Vector2(4,0);
     TetrisBlock[] blockArray = { new block_I(startLocation), new block_square(startLocation),
                                  new block_L(startLocation), new block_L_inverse(startLocation),
                                  new block_z(startLocation), new block_z_inverse(startLocation),
@@ -258,6 +201,13 @@ class BlockSelector
 
     public TetrisBlock SelectNextBlock(int selector)
     {
+        blockArray = new TetrisBlock[] {
+                                            new block_I(startLocation), new block_square(startLocation),
+                                            new block_L(startLocation), new block_L_inverse(startLocation),
+                                            new block_z(startLocation), new block_z_inverse(startLocation),
+                                            new block_T(startLocation)
+                                        };
+
         return blockArray[selector];
     }
 };
@@ -278,8 +228,11 @@ class TetrisGrid
     Vector2 currentDrawPosition = Vector2.Zero;
     TetrisBlock activeBlock = new block_L(new Vector2(3,0));
     TetrisBlock nextBlock = blockSelector.SelectNextBlock(random.Next(0,6));
+    public bool gameover;
+    List<int> fullRowIndexBuffer = new List<int> {-1};
 
-    float timer = 30.0f;
+    public float timerLength = 20.0f;
+    float timer = 20.0f;
     int input;
     
     public TetrisGrid()
@@ -287,6 +240,7 @@ class TetrisGrid
         emptyCell = TetrisGame.ContentManager.Load<Texture2D>("block");
         position = Vector2.Zero;
         pointbuffer = new List<int> {0};
+        gameover = false;
         Clear();
     }
     
@@ -302,58 +256,40 @@ class TetrisGrid
         bool[,] nextBlockArray = nextBlock.Read();
         UpdateGrid();
 
-        for(int i = 0; i < Height; i++)
+        //draw background grid
+        for(int y = 0; y < Height; y++)
         {
-            for(int j = 0; j < Width; j++)
+            for(int x = 0; x < Width; x++)
             {
-                spriteBatch.Draw(emptyCell, currentDrawPosition, grid[i, j]);
+                spriteBatch.Draw(emptyCell, currentDrawPosition, grid[y, x]);
                 currentDrawPosition.X += 30;
             }
             currentDrawPosition.X = 0;
             currentDrawPosition.Y += 30;
         }
         
-        if(blockPosition.Y < 16)
+        //draw active block
+        for (int y = 0; y < 4; y++)
         {
-            for (int i = 0; i < 4; i++)
+            for (int x = 0; x < 4; x++)
             {
-                for (int j = 0; j < 4; j++)
-                {
-                    if (blockArray[i, j])
-                        spriteBatch.Draw(emptyCell, new Vector2((blockPosition.X + new Vector2(i, j).X) * 30, (blockPosition.Y + new Vector2(i, j).Y) * 30), blockColor);
-                }
+                if (blockArray[y, x])
+                    spriteBatch.Draw(emptyCell, new Vector2((blockPosition.X + (float)x) * 30, (blockPosition.Y + (float)y) * 30), blockColor);
             }
         }
 
         //preview of nextBlock
-        for (int i = 0; i < 4; i++)
+        for (int y = 0; y < 4; y++)
         {
-            for (int j = 0; j < 4; j++)
+            for (int x = 0; x < 4; x++)
             {
-                if (nextBlockArray[i, j])
+                if (nextBlockArray[y, x])
                 {
-                    spriteBatch.Draw(emptyCell, new Vector2((nextBlockPreviewLocation.X + (new Vector2(i, j).X) * 30), (nextBlockPreviewLocation.Y + (new Vector2(i, j).Y) * 30)), nextBlockColor);
+                    spriteBatch.Draw(emptyCell, new Vector2(nextBlockPreviewLocation.X + (float)x * 30, nextBlockPreviewLocation.Y + (float)y * 30), nextBlockColor);
                 }
                 else
                 {
-                    spriteBatch.Draw(emptyCell, new Vector2((nextBlockPreviewLocation.X + (new Vector2(i, j).X) * 30), (nextBlockPreviewLocation.Y + (new Vector2(i, j).Y) * 30)), Color.Gray);
-                }
-
-            }
-        }
-
-        //debug view of currentBlock
-        for (int i = 0; i < 4; i++)
-        {
-            for (int j = 0; j < 4; j++)
-            {
-                if (blockArray[i, j])
-                {
-                    spriteBatch.Draw(emptyCell, new Vector2((400 + (new Vector2(i, j).X) * 30), (400 + (new Vector2(i, j).Y) * 30)), Color.Green);
-                }
-                else
-                {
-                    spriteBatch.Draw(emptyCell, new Vector2((400 + (new Vector2(i, j).X) * 30), (400 + (new Vector2(i, j).Y) * 30)), Color.Red);
+                    spriteBatch.Draw(emptyCell, new Vector2(nextBlockPreviewLocation.X + (float)x * 30, nextBlockPreviewLocation.Y + (float)y * 30), Color.White);
                 }
 
             }
@@ -377,44 +313,52 @@ class TetrisGrid
         input = i;
     }
 
-    public void moveTetrisBlock(int input,ref TetrisBlock activeBlock, bool canGoDownTwice, Vector2 position)
+    public void moveTetrisBlock(int input,ref TetrisBlock activeBlock, Vector2 position)
     {
-        int xDisplacement = 0;
-        int yDisplacement = 1;
-        bool[,] blockArray = activeBlock.Read();
-
         switch (input)
         {
             case 0:
                 //move left
-                if(!checkCollisionSides())
-                {
+                if(!checkLeftBoundCollision())
                     activeBlock.updateLocation(new Vector2(-1, 0));
-                }
+
+                if(checkInternalCollision())
+                    activeBlock.updateLocation(new Vector2(1, 0));
 
                 break;
             case 1:
                 //move right
-                if (!checkCollisionSides())
-                {
+                if (!checkRightBoundCollision())
                     activeBlock.updateLocation(new Vector2(1, 0));
-                }
+
+                if(checkInternalCollision())
+                    activeBlock.updateLocation(new Vector2(-1, 0));
 
                 break;
             case 2:
                 //move down
-                for(int i = 0; i < 2; i++)
+                while (true)
                 {
-                    if (!checkBlockOnBlockCollision())
+                    activeBlock.updateLocation(new Vector2(0, 1));
+
+                    if (checkFallCollision())
                     {
-                        activeBlock.updateLocation(new Vector2(0,0));
+                        activeBlock.updateLocation(new Vector2(0,-1));
+                        break;
                     }
+
                 }
                 break;
             case 3:
                 //rotate right
                 activeBlock.rotateRight();
-                if(checkBlockOnBlockCollision())
+
+                if(checkInGrid())
+                    activeBlock.rotateRight();
+                    activeBlock.rotateRight();
+                    activeBlock.rotateRight();
+
+                if (checkInternalCollision())
                 {
                     activeBlock.rotateRight();
                     activeBlock.rotateRight();
@@ -427,7 +371,10 @@ class TetrisGrid
                 activeBlock.rotateRight();
                 activeBlock.rotateRight();
 
-                if (checkBlockOnBlockCollision())
+                if(checkInGrid())
+                    activeBlock.rotateRight();
+                
+                if (checkInternalCollision())
                 {
                     activeBlock.rotateRight();
                 }
@@ -440,104 +387,202 @@ class TetrisGrid
                 break;
         }
 
-        if(position.Y == 15)
-        {
-            bool bottomSideEmpty = true;
-            yDisplacement = 0;
-
-            for(int i = 0; i < 4; i++)
-            {
-                if (blockArray[i, 3])
-                    bottomSideEmpty = false;
-            }
-
-            if (bottomSideEmpty)
-            {
-                activeBlock.shiftDown();
-            }
-        }
-
-        activeBlock.updateLocation(new Vector2(xDisplacement, yDisplacement));
+        if (!checkBlockOnBlockCollision())
+            activeBlock.updateLocation(new Vector2(0, 1));
     }
 
     public bool checkBlockOnBlockCollision()
     {
         bool[,] blockArray = activeBlock.Read();
         Vector2 activeBlockPosition = activeBlock.getLocation();
-        bool hasCollided = false;
+
+        if(activeBlockPosition.Y < Height - 4)
+        {
+            for (int y = 0; y < 4; y++)
+            {
+                for (int x = 0; x < 4; x++)
+                {
+                    if (blockArray[y, x] && grid[y + (int)activeBlockPosition.Y + 1, x + (int)activeBlockPosition.X] != Color.White)
+                        return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+
+    public bool checkInternalCollision()
+    {
+        bool[,] blockArray = activeBlock.Read();
+        Vector2 activeBlockPosition = activeBlock.getLocation();
 
         for (int y = 0; y < 4; y++)
         {
             for (int x = 0; x < 4; x++)
             {
                 if (blockArray[y, x] && grid[y + (int)activeBlockPosition.Y, x + (int)activeBlockPosition.X] != Color.White)
-                {
-                    if ((int)activeBlockPosition.Y + y < 19)
-                    {
-                        hasCollided = grid[y + (int)activeBlockPosition.Y + 1, x + (int)activeBlockPosition.X] != Color.White;
-                    }
-                    else if ((int)activeBlockPosition.Y + y == 19)
-                    {
-                        hasCollided = true;
-                    }
-
-                }
+                    return true;
             }
         }
 
-        return hasCollided;
+        return false;
     }
 
-    public bool checkCollisionSides()
+    public bool checkLeftBoundCollision()
     {
         bool[,] blockArray = activeBlock.Read();
         Vector2 activeBlockPosition = activeBlock.getLocation();
-        bool hasCollided = false;
 
         for (int y = 0; y < 4; y++)
         {
             for (int x = 0; x < 4; x++)
             {
-                if (blockArray[y, x] && x + (int)activeBlockPosition.X  == 6 || x + (int)activeBlockPosition.X <= 0)
+                if (blockArray[y, x] && x + (int)activeBlockPosition.X <= 0)
                 {
-                    hasCollided = true;
+                    return true;
                 }
             }
         }
 
-        return hasCollided;
+        return false;
     }
 
+    public bool checkRightBoundCollision()
+    {
+        bool[,] blockArray = activeBlock.Read();
+        Vector2 activeBlockPosition = activeBlock.getLocation();
+
+        for (int y = 0; y < 4; y++)
+        {
+            for (int x = 0; x < 4; x++)
+            {
+                if (blockArray[y, x] && x + (int)activeBlockPosition.X >= 9)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public bool checkVerticalBoundCollision()
+    {
+        bool[,] blockArray = activeBlock.Read();
+        Vector2 activeBlockPosition = activeBlock.getLocation();
+
+        for (int y = 0; y < 4; y++)
+        {
+            for (int x = 0; x < 4; x++)
+            {
+                if (blockArray[y, x] && y + (int)activeBlockPosition.Y == 19 || y + (int)activeBlockPosition.Y < 0)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public bool checkInGrid()
+    {
+        bool[,] blockArray = activeBlock.Read();
+        Vector2 activeBlockPosition = activeBlock.getLocation();
+
+        for (int y = 0; y < 4; y++)
+        {
+            for (int x = 0; x < 4; x++)
+            {
+                if (blockArray[y, x] && y + (int)activeBlockPosition.Y > 19 || y + (int)activeBlockPosition.Y < 0 || x + (int)activeBlockPosition.X < 0 || x + (int)activeBlockPosition.X > 9)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public bool checkFallCollision()
+    {
+        if (checkVerticalBoundCollision())
+            return true;
+        if (checkBlockOnBlockCollision())
+            return true;
+
+        return false;
+    }
+
+    public void indexFullRows()
+    {
+        for(int y = 0; y < Height; y++)
+        {
+            bool rowFull = true;
+            for(int x = 0; x < Width; x++)
+            {
+                if (grid[y, x] == Color.White && rowFull)
+                    rowFull = false;
+            }
+
+            if (rowFull)
+            {
+                pointbuffer.Add(100);
+                fullRowIndexBuffer.Add(y);
+            }
+        }
+    }
+
+    public void cascadeRows()
+    {
+        if(fullRowIndexBuffer.Count > 1)
+        {
+            for (int i = 1; i < fullRowIndexBuffer.Count; i++)
+            {
+                for (int y = fullRowIndexBuffer[i]; y > 0; y--)
+                {
+                    for (int x = 0; x < Width; x++)
+                    {
+                        grid[y, x] = grid[y - 1, x];
+                    }
+                }
+            }
+
+            for (int x = 0; x < Width; x++)
+            {
+                grid[0, x] = Color.White;
+            }
+
+            fullRowIndexBuffer = new List<int> { -1 };
+        }
+    }
 
     public void UpdateGrid()
     {
         if(timer > 0)
         {
-            timer -= 0.8f;
+            timer -= 0.5f;
         }
         else
         {
             Color color = activeBlock.getColor();
-            Vector2 position = activeBlock.getLocation();
+            Vector2 activeBlockPosition = activeBlock.getLocation();
             bool[,] blockArray = activeBlock.Read();
-            bool blockHit = false;
-            bool canGoDownTwice = true;
-            bool rowCleared = false;
-
-            if (checkBlockOnBlockCollision())
-            {
-                blockHit = true;
-            }
+            bool blockHit = checkBlockOnBlockCollision() || checkVerticalBoundCollision();
 
             if (blockHit)
             {
-                if (!rowCleared)
+                //create new active activeBlock
+                //add 10 points to pointbuffer
+                activeBlock = nextBlock;
+                nextBlock = blockSelector.SelectNextBlock(random.Next(0, 7));
+                activeBlock.setLocation(new Vector2(4, 0));
+                pointbuffer.Add(10);
+
+                //check if the game is over
+                if (activeBlockPosition.Y == 0 && checkBlockOnBlockCollision())
                 {
-                    //create new active activeBlock
-                    //add 10 points to pointbuffer
-                    activeBlock = nextBlock;
-                    nextBlock = blockSelector.SelectNextBlock(random.Next(0, 6));
-                    pointbuffer.Add(10);
+                    gameover = true;
                 }
 
                 //put the old activeblock into the grid
@@ -547,17 +592,24 @@ class TetrisGrid
                     {
                         if (blockArray[i, j])
                         {
-                            grid[i + (int)position.Y, j + (int)position.X] = color;
+                            grid[i + (int)activeBlockPosition.Y, j + (int)activeBlockPosition.X] = color;
                         }
                     }
                 }
+
+                //index full rows
+                indexFullRows();
+
+                //move rows down if a row has been cleared
+                cascadeRows();
+
             }
             else
             {
-                moveTetrisBlock(input, ref activeBlock, canGoDownTwice, position);
+                moveTetrisBlock(input, ref activeBlock, activeBlockPosition);
             }
 
-            timer = 30.0f;
+            timer = timerLength;
         }
         
     }
@@ -573,6 +625,11 @@ class TetrisGrid
 
         pointbuffer = new List<int> {0};
         return totalPoints;
+    }
+
+    public Vector2 getBlockPosition()
+    {
+        return activeBlock.getLocation();
     }
 }
 

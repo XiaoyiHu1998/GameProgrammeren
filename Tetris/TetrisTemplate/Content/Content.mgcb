@@ -44,3 +44,15 @@
 /processorParam:TextureFormat=Compressed
 /build:SpelFont.spritefont
 
+#begin blockhit.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:blockhit.wav
+
+#begin levelup.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:levelup.wav
+

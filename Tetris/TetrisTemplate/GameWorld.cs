@@ -11,7 +11,7 @@ class GameWorld
     /// <summary>
     /// An enum for the different game states that the game can have.
     /// </summary>
-    enum GameState
+    public enum GameState
     {
         StartScreen,
         Playing,
@@ -32,7 +32,7 @@ class GameWorld
     /// <summary>
     /// The current game state.
     /// </summary>
-    GameState gameState;
+    public GameState gameState;
 
     /// <summary>
     /// The main grid of the game.
@@ -60,7 +60,7 @@ class GameWorld
         gameState = GameState.Playing;
         score = 0;
         level = 1;
-        levelThreshold = 50;
+        levelThreshold = 75;
 
         font = TetrisGame.ContentManager.Load<SpriteFont>("SpelFont");
 
@@ -71,21 +71,32 @@ class GameWorld
     {
     }
 
+    public void Start()
+    {
+        gameState = GameState.Playing;
+    }
+
     public void Update(GameTime gameTime)
     {
         grid.UpdateGrid();
-        score += grid.returnPointBuffer();
-        if(score == levelThreshold)
+        score += grid.returnPointBuffer() * (1 + level / 10);
+        if(score >= levelThreshold)
         {
             level++;
             levelThreshold *= 1.5f;
+            grid.timerLength = grid.timerLength * (float)0.95;
+        }
+        if (grid.gameover)
+        {
+            gameState = GameState.GameOver;
         }
     }
 
     public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
     {
         {
-            Vector2 textLocationStart = new Vector2(400, 50);
+            Vector2 textLocationStart = new Vector2(225, 260);
+            Vector2 textLocationControls = new Vector2(225, 300);
             Vector2 textLocationEnd = new Vector2(400, 50);
             Vector2 textLocationScore = new Vector2(400, 50);
             Vector2 textLocationLevel = new Vector2(400, 80);
@@ -96,6 +107,7 @@ class GameWorld
                 case 0:
                     spriteBatch.Begin();
                     spriteBatch.DrawString(font, "Press space to start!", textLocationStart, Color.Black);
+                    spriteBatch.DrawString(font, "Use A and D for left right, Q and E for rotation", textLocationControls, Color.Black);
                     spriteBatch.End();
 
                     break;
@@ -104,6 +116,7 @@ class GameWorld
                     spriteBatch.DrawString(font, "Score: " + score, textLocationScore, Color.Black);
                     spriteBatch.DrawString(font, "Level: " + level, textLocationLevel, Color.Black);
                     spriteBatch.DrawString(font, "Volgend blok:", textLocationVolgendBlock, Color.Black);
+                    spriteBatch.DrawString(font, "y position: " + grid.getBlockPosition().Y, new Vector2(400, 350), Color.Black);
                     grid.Draw(gameTime, spriteBatch);
                     spriteBatch.End();
                     break;
@@ -120,6 +133,14 @@ class GameWorld
 
     public void Reset()
     {
+        gameState = GameState.StartScreen;
+        score = 0;
+        level = 1;
+        levelThreshold = 50;
+
+        font = TetrisGame.ContentManager.Load<SpriteFont>("SpelFont");
+
+        grid = new TetrisGrid();
     }
 
     public void Input(int integer)
