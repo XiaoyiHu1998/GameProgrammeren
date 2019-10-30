@@ -66,9 +66,13 @@ partial class Player : AnimatedGameObject
         {
             Mirror = velocity.X < 0;
         }
-        if ((inputHelper.KeyPressed(Keys.Space) || inputHelper.KeyPressed(Keys.Up)) && isOnTheGround)
+        if ( inputHelper.KeyPressed(Keys.Up) && isOnTheGround)
         {
             Jump();
+        }
+        if(inputHelper.KeyPressed(Keys.Space))
+        {
+            Shoot();
         }
     }
 
@@ -166,5 +170,11 @@ partial class Player : AnimatedGameObject
         velocity.X = 0.0f;
         PlayAnimation("celebrate");
         GameEnvironment.AssetManager.PlaySound("Sounds/snd_player_won");
+    }
+
+    private void Shoot()
+    {
+        PlayerProjectile projectile = GameWorld.Find("PlayerProjectile") as PlayerProjectile;
+        projectile.Spawn(this.position);
     }
 }
