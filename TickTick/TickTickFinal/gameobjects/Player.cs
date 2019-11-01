@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Input;
+using System.Collections.Generic;
 
 partial class Player : AnimatedGameObject
 {
@@ -11,6 +12,7 @@ partial class Player : AnimatedGameObject
     protected bool exploded;
     protected bool finished;
     protected bool walkingOnIce, walkingOnHot;
+    protected bool shootLeft;
 
     public Player(Vector2 start) : base(2, "player")
     {
@@ -37,6 +39,7 @@ partial class Player : AnimatedGameObject
         walkingOnHot = false;
         PlayAnimation("idle");
         previousYPosition = BoundingBox.Bottom;
+        shootLeft = false;
     }
 
     public override void HandleInput(InputHelper inputHelper)
@@ -53,10 +56,12 @@ partial class Player : AnimatedGameObject
         if (inputHelper.IsKeyDown(Keys.Left))
         {
             velocity.X = -walkingSpeed;
+            shootLeft = true;
         }
         else if (inputHelper.IsKeyDown(Keys.Right))
         {
             velocity.X = walkingSpeed;
+            shootLeft = false;
         }
         else if (!walkingOnIce && isOnTheGround)
         {
@@ -174,7 +179,9 @@ partial class Player : AnimatedGameObject
 
     private void Shoot()
     {
-        PlayerProjectile projectile = GameWorld.Find("PlayerProjectile") as PlayerProjectile;
-        projectile.Spawn(this.position);
+        GameObjectList projectiles = GameWorld.Find("PlayerProjectiles") as GameObjectList;
+        PlayerProjectile projectile = new PlayerProjectile(position + new Vector2(0, -60), shootLeft);
+        projectiles.Add(projectile);
     }
+
 }

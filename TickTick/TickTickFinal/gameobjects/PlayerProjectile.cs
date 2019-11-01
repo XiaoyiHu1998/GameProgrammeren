@@ -5,18 +5,18 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 
-class PlayerProjectile : AnimatedGameObject
+class PlayerProjectile : SpriteGameObject
 {
-    protected Vector2 startposition;
-    
+    bool moveLeft;
+    int timeToLive;
+    bool alive;
         
-    public PlayerProjectile(Vector2 playerGlobalPosition)
-    : base(2, "PlayerProjectile")
+    public PlayerProjectile(Vector2 position, bool moveLeftDirection)
+    : base("Sprites/spr_bomb", 2, "PlayerProjectile")
     {
-        LoadAnimation("Sprites/Player/spr_idle", "idle", true);
-        LoadAnimation("Sprites/Player/spr_explode@5x5", "explode", false, 0.04f);
-
-
+        Spawn(position);
+        moveLeft = moveLeftDirection;
+        timeToLive = 50;
     }
 
     public override void Reset()
@@ -28,30 +28,46 @@ class PlayerProjectile : AnimatedGameObject
     {
         position = spawnPosition;
         visible = true;
+        alive = true;
     }
 
-    public void Update()
+
+    public override void Update(GameTime gameTime)
     {
-        Rocket rocket = GameWorld.Find("Rocket") as Rocket;
-
-        if (CollidesWith(rocket))
+        if (alive)
         {
-            rocket.Reset();
-            PlayAnimation("explode");
-            Reset();
-        }
-        else
-        {
-            PlayAnimation("idle");
-            this.Position =  new Vector2(this.Position.X + 2.0f, this.Position.Y);
-        }
+            GameObjectList enemies = GameWorld.Find("enemies") as GameObjectList;
+            List<GameObject> enemyList = enemies.Children;
 
-        //TODO: reset if out of bounds
-        if(GlobalPosition.X > 1)
-        {
+            if (enemies != null)
+            {
+                foreach (Enemy enemy in enemyList)
+                {
+                    if (CollidesWith(enemy))
+                    {
+                        enemy.Die();
+                        timeToLive = 0;
+                    }
+                }
+            }
 
+            if (moveLeft)
+            {
+                position.X -= 6.0f;
+            }
+            else
+            {
+                position.X += 6.0f;
+            }
+
+            timeToLive -= 1;
+
+            if(timeToLive <= 0)
+            {
+                alive = false;
+                visible = false;
+            }
         }
-
     }
 }
 

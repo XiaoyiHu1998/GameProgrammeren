@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-class Sparky : AnimatedGameObject
+class Sparky : Enemy
 {
     protected float idleTime;
     protected float yOffset;
@@ -25,39 +25,43 @@ class Sparky : AnimatedGameObject
 
     public override void Update(GameTime gameTime)
     {
-        base.Update(gameTime);
-        if (idleTime <= 0)
+        if (alive)
         {
-            PlayAnimation("electrocute");
-            if (velocity.Y != 0)
+            base.Update(gameTime);
+            if (idleTime <= 0)
             {
-                // falling down
-                yOffset -= velocity.Y * (float)gameTime.ElapsedGameTime.TotalSeconds;
-                if (yOffset <= 0)
+                PlayAnimation("electrocute");
+                if (velocity.Y != 0)
                 {
-                    velocity.Y = 0;
+                    // falling down
+                    yOffset -= velocity.Y * (float)gameTime.ElapsedGameTime.TotalSeconds;
+                    if (yOffset <= 0)
+                    {
+                        velocity.Y = 0;
+                    }
+                    else if (yOffset >= 120.0f)
+                    {
+                        Reset();
+                    }
                 }
-                else if (yOffset >= 120.0f)
+                else if (Current.AnimationEnded)
                 {
-                    Reset();
+                    velocity.Y = -60;
                 }
             }
-            else if (Current.AnimationEnded)
+            else
             {
-                velocity.Y = -60;
+                PlayAnimation("idle");
+                idleTime -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+                if (idleTime <= 0.0f)
+                {
+                    velocity.Y = 300;
+                }
             }
-        }
-        else
-        {
-            PlayAnimation("idle");
-            idleTime -= (float)gameTime.ElapsedGameTime.TotalSeconds;
-            if (idleTime <= 0.0f)
-            {
-                velocity.Y = 300;
-            }
-        }
 
-        CheckPlayerCollision();
+            CheckPlayerCollision();
+        }
+        
     }
 
     public void CheckPlayerCollision()
