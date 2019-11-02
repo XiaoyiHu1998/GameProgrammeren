@@ -20,5 +20,6 @@ class WaterDrop : SpriteGameObject
             visible = false;
             GameEnvironment.AssetManager.PlaySound("Sounds/snd_watercollected");
         }
+        setParalax(new Vector2(1, 1));
     }
 }

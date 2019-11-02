@@ -115,6 +115,7 @@ partial class Player : AnimatedGameObject
         }
 
         DoPhysics();
+        GameEnvironment.Camera.updatePosition(GlobalPosition);
     }
 
     public void Explode()

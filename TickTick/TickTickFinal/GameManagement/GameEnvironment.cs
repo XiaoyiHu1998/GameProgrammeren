@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using TickTick5.GameManagement;
 
 public class GameEnvironment : Game
 {
@@ -16,6 +17,7 @@ public class GameEnvironment : Game
     protected static Random random;
     protected static AssetManager assetManager;
     protected static GameSettingsManager gameSettingsManager;
+    protected static Camera camera;
 
     public GameEnvironment()
     {
@@ -27,6 +29,12 @@ public class GameEnvironment : Game
         random = new Random();
         assetManager = new AssetManager(Content);
         gameSettingsManager = new GameSettingsManager();
+        camera = new Camera();
+    }
+
+    public static Camera Camera
+    {
+        get { return camera; }
     }
 
     public static Point Screen

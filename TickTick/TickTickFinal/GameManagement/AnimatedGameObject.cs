@@ -9,6 +9,7 @@ public class AnimatedGameObject : SpriteGameObject
         : base("", layer, id)
     {
         animations = new Dictionary<string, Animation>();
+        setParalax(new Vector2(1, 1));
     }
 
     public void LoadAnimation(string assetName, string id, bool looping, 

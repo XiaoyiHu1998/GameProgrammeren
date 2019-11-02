@@ -5,6 +5,7 @@ public class SpriteGameObject : GameObject
 {
     protected SpriteSheet sprite;
     protected Vector2 origin;
+    protected Vector2 paralax;
     public bool PerPixelCollisionDetection = true;
 
     public SpriteGameObject(string assetName, int layer = 0, string id = "", int sheetIndex = 0)
@@ -18,7 +19,14 @@ public class SpriteGameObject : GameObject
         {
             sprite = null;
         }
-    }    
+
+        paralax = new Vector2(0, 0);
+    }
+
+    public void setParalax(Vector2 value)
+    {
+        paralax = value;
+    }
 
     public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
     {
@@ -26,7 +34,7 @@ public class SpriteGameObject : GameObject
         {
             return;
         }
-        sprite.Draw(spriteBatch, this.GlobalPosition, origin);
+        sprite.Draw(spriteBatch, this.GlobalPosition - (GameEnvironment.Camera.CameraPosition * paralax), origin);
     }
 
     public SpriteSheet Sprite

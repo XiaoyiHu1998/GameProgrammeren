@@ -4,6 +4,8 @@ partial class Level : GameObjectList
 {
     protected bool locked, solved;
     protected Button quitButton;
+    private Vector2 worldSize;
+    private double levelTime;
 
     public Level(int levelIndex)
     {
@@ -14,11 +16,12 @@ partial class Level : GameObjectList
         backgrounds.Add(backgroundSky);
 
         // add a few random mountains
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 6; i++) //increased mountain count by 1 to evenly divide them across layers
         {
             SpriteGameObject mountain = new SpriteGameObject("Backgrounds/spr_mountain_" + (GameEnvironment.Random.Next(2) + 1), 1);
             mountain.Position = new Vector2((float)GameEnvironment.Random.NextDouble() * GameEnvironment.Screen.X - mountain.Width / 2, 
                 GameEnvironment.Screen.Y - mountain.Height);
+            mountain.setParalax(new Vector2((float) ( (i + 1) / 2) / 8, 0)); //mountains are added sequentially to paralax layers 0.125, 0.25 and 0.375, with the closest being added last
             backgrounds.Add(mountain);
         }
 
@@ -42,6 +45,7 @@ partial class Level : GameObjectList
         Add(new GameObjectList(2, "enemies"));
 
         LoadTiles("Content/Levels/" + levelIndex + ".txt");
+        timer.LevelTime = levelTime;
     }
 
     public bool Completed
@@ -87,5 +91,7 @@ partial class Level : GameObjectList
         get { return solved; }
         set { solved = value; }
     }
+
+    public Vector2 WorldSize { get => worldSize; }
 }
 

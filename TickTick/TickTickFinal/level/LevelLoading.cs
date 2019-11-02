@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Microsoft.Xna.Framework;
 
@@ -15,33 +16,36 @@ partial class Level : GameObjectList
             textLines.Add(line);
             line = fileReader.ReadLine();
         }
-        TileField tiles = new TileField(textLines.Count - 1, width, 1, "tiles");
+        TileField tiles = new TileField(textLines.Count - 2, width, 1, "tiles");
 
         GameObjectList hintField = new GameObjectList(100);
         Add(hintField);
-        string hint = textLines[textLines.Count - 1];
+        string hint = textLines[textLines.Count - 2];
         SpriteGameObject hintFrame = new SpriteGameObject("Overlays/spr_frame_hint", 1);
         hintField.Position = new Vector2((GameEnvironment.Screen.X - hintFrame.Width) / 2, 10);
         hintField.Add(hintFrame);
         TextGameObject hintText = new TextGameObject("Fonts/HintFont", 2);
-        hintText.Text = textLines[textLines.Count - 1];
+        hintText.Text = textLines[textLines.Count - 2];
         hintText.Position = new Vector2(120, 25);
         hintText.Color = Color.Black;
         hintField.Add(hintText);
-        VisibilityTimer hintTimer = new VisibilityTimer(hintField, 1, "hintTimer");
+        VisibilityTimer hintTimer = new VisibilityTimer(hintField, 2, "hintTimer");
         Add(hintTimer);
-
+        
         Add(tiles);
         tiles.CellWidth = 72;
         tiles.CellHeight = 55;
         for (int x = 0; x < width; ++x)
         {
-            for (int y = 0; y < textLines.Count - 1; ++y)
+            for (int y = 0; y < textLines.Count - 2; ++y)
             {
                 Tile t = LoadTile(textLines[y][x], x, y);
                 tiles.Add(t, x, y);
             }
         }
+
+        worldSize = new Vector2(width * 72, (textLines.Count - 2) * 55);
+        levelTime = Double.Parse(textLines[textLines.Count - 1]);
     }
 
     private Tile LoadTile(char tileType, int x, int y)
@@ -156,6 +160,7 @@ partial class Level : GameObjectList
         SpriteGameObject exitObj = new SpriteGameObject("Sprites/spr_goal", 1, "exit");
         exitObj.Position = new Vector2(x * tiles.CellWidth, (y+1) * tiles.CellHeight);
         exitObj.Origin = new Vector2(0, exitObj.Height);
+        exitObj.setParalax(new Vector2(1, 1));
         Add(exitObj);
         return new Tile();
     }

@@ -20,6 +20,7 @@ class Tile : SpriteGameObject
         type = tp;
         hot = false;
         ice = false;
+        setParalax(new Vector2(1, 1));
     }
 
     public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)

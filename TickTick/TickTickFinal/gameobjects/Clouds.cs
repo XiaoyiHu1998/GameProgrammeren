@@ -11,6 +11,7 @@ class Clouds : GameObjectList
             cloud.Position = new Vector2((float)GameEnvironment.Random.NextDouble() * GameEnvironment.Screen.X - cloud.Width / 2, 
                 (float)GameEnvironment.Random.NextDouble() * GameEnvironment.Screen.Y - cloud.Height / 2);
             cloud.Velocity = new Vector2((float)((GameEnvironment.Random.NextDouble() * 2) - 1) * 20, 0);
+            cloud.setParalax(new Vector2(0.5f, 0.5f));
             Add(cloud);
         }
     }

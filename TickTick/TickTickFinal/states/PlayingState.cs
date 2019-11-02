@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -33,6 +34,8 @@ class PlayingState : IGameLoopObject
             {
                 currentLevelIndex = value;
                 CurrentLevel.Reset();
+
+                GameEnvironment.Camera.WorldSize = CurrentLevel.WorldSize;
             }
         }
     }
@@ -88,7 +91,7 @@ class PlayingState : IGameLoopObject
 
     public void LoadLevels()
     {
-        for (int currLevel = 1; currLevel <= 10; currLevel++)
+        for (int currLevel = 1; currLevel <= 12; currLevel++)
         {
             levels.Add(new Level(currLevel));
         }
