@@ -17,6 +17,7 @@ class PlayerProjectile : SpriteGameObject
         Spawn(position);
         moveLeft = moveLeftDirection;
         timeToLive = 50;
+        setParalax(new Vector2(1, 1));
     }
 
     public override void Reset()
