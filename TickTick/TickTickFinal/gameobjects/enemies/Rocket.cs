@@ -1,15 +1,17 @@
 ﻿using Microsoft.Xna.Framework;
 
-class Rocket : AnimatedGameObject
+class Rocket : Enemy
 {
     protected double spawnTime;
     protected Vector2 startPosition;
+    public bool dead;
 
     public Rocket(bool moveToLeft, Vector2 startPosition)
     {
         LoadAnimation("Sprites/Rocket/spr_rocket@3", "default", true, 0.2f);
         PlayAnimation("default");
         Mirror = moveToLeft;
+        dead = false;
         this.startPosition = startPosition;
         Reset();
     }
@@ -24,24 +26,28 @@ class Rocket : AnimatedGameObject
 
     public override void Update(GameTime gameTime)
     {
-        base.Update(gameTime);
-        if (spawnTime > 0)
+        if (alive)
         {
-            spawnTime -= gameTime.ElapsedGameTime.TotalSeconds;
-            return;
-        }
-        visible = true;
-        velocity.X = 600;
-        if (Mirror)
-        {
-            this.velocity.X *= -1;
-        }
-        CheckPlayerCollision();
-        // check if we are outside the screen
-        Rectangle screenBox = new Rectangle(0, 0, GameEnvironment.Screen.X, GameEnvironment.Screen.Y);
-        if (!screenBox.Intersects(this.BoundingBox))
-        {
-            Reset();
+            base.Update(gameTime);
+            if (spawnTime > 0)
+            {
+                spawnTime -= gameTime.ElapsedGameTime.TotalSeconds;
+                return;
+            }
+            visible = true;
+            velocity.X = 600;
+            if (Mirror)
+            {
+                this.velocity.X *= -1;
+            }
+            CheckPlayerCollision();
+            //CheckProjectileCollision();
+            // check if we are outside the screen
+            Rectangle screenBox = new Rectangle(0, 0, GameEnvironment.Screen.X, GameEnvironment.Screen.Y);
+            if (!screenBox.Intersects(this.BoundingBox))
+            {
+                Reset();
+            }
         }
     }
 
@@ -62,4 +68,14 @@ class Rocket : AnimatedGameObject
         }
     }
 
+
+    //public void CheckProjectileCollision()
+    //{
+    //    PlayerProjectile projectile = GameWorld.Find("PlayerProjectile") as PlayerProjectile;
+
+    //    if (CollidesWith(projectile) && visible)
+    //    {
+    //        this.Reset();
+    //    }
+    //}
 }
