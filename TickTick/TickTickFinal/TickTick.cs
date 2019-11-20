@@ -4,6 +4,9 @@ using System;
 class TickTick : GameEnvironment
 {
     [STAThread]
+
+    //test
+
     static void Main()
     {
         TickTick game = new TickTick();
